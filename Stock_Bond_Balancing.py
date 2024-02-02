@@ -5,11 +5,11 @@ import requests
 
 # 对比中美国债/中美大盘指数的投资性价比
 def float3(f: float):
-    return format(f, '.3f')
+    return round(f, 3)
 
 
 def float4(f: float):
-    return format(f, '.4f')
+    return round(f, 4)
 
 # 国债 https://data.eastmoney.com/cjsj/zmgzsyl.html
 def get_cn_bonds():
@@ -23,8 +23,8 @@ def get_cn_bonds():
         print(reply.text)
         raise Exception("get cn_bonds_uri status_code:", reply.status_code)
     record = reply.json()['records'][0]
-    print('中国1年期国债利率:',  float3(float(record['oneRate'])))
-    print('中国10年期国债利率:', float3(float(record['tenRate'])))
+    print('中国1年期国债利率:', str(float3(float(record['oneRate'])))+'%')
+    print('中国10年期国债利率:', str(float3(float(record['tenRate'])))+'%')
 
 
 def get_us_bonds():
@@ -35,8 +35,8 @@ def get_us_bonds():
 
     us_bonds_data = xmltodict.parse(reply.text)
     properties = us_bonds_data['feed']['entry'][-1]['content']['m:properties']
-    print('美国1年期国债利率:', properties['d:BC_1YEAR']['#text'])
-    print('美国10年期国债利率:', properties['d:BC_10YEAR']['#text'])
+    print('美国1年期国债利率:', properties['d:BC_1YEAR']['#text']+'%')
+    print('美国10年期国债利率:', properties['d:BC_10YEAR']['#text']+'%')
 
 
 # 宽基指数 https://danjuanfunds.com/djapi/index_eva/dj
@@ -53,11 +53,11 @@ def get_index():
     for i in reply.json()['data']['items']:
         # print(i)
         if i['index_code'] in index_codes:
-            pe_per = float3(1 - float(i['pe_over_history']))
-            pb_per = float3(1 - float(i['pb_over_history']))
+            pe_per = "{:.2%}".format(float3(1 - float(i['pe_over_history'])))
+            pb_per = "{:.2%}".format(float3(1 - float(i['pb_over_history'])))
             roe_pb = float4(i['roe'] / i['pb'])
-            print(i['index_code'], i['name'], ': PE:', float3(i['pe']), ', PB:', float3(i['pb']), ', ROE:', float4(i['roe']),
-                  ', PE百分位:', pe_per, ', PB百分位:', pb_per, ', 股息率:', i['yeild'], ', ROE/PB:', roe_pb)
+            print(i['index_code'], i['name'], ': PE:', float3(i['pe']), ', PB:', float3(i['pb']), ', ROE:', "{:.2%}".format(float4(i['roe'])),
+                  ', PE百分位:', pe_per, ', PB百分位:', pb_per, ', 股息率:', "{:.2%}".format(i['yeild']), ', ROE/PB:', "{:.2%}".format(roe_pb))
 
 
 date = time.strftime('%Y-%m-%d', time.localtime(time.time()))
@@ -66,5 +66,5 @@ print('\n')
 print('DATE:', date, '汇率(USD/CNY):', response.json()['rates']['CNY'])
 
 get_cn_bonds()
-# get_us_bonds()
+get_us_bonds()
 get_index()
