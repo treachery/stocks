@@ -14,8 +14,13 @@ def float4(f: float):
 # 国债 https://data.eastmoney.com/cjsj/zmgzsyl.html
 def get_cn_bonds():
     cn_bonds_uri = "https://iftp.chinamoney.com.cn/ags/ms/cm-u-bk-currency/SddsIntrRateGovYldHis?lang=CN&pageNum=1&pageSize=5"
-    reply = requests.get(cn_bonds_uri)
+    header = {
+        "X-Forwarded-For": "1.1.1.1",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    }
+    reply = requests.get(cn_bonds_uri, headers=header)
     if reply.status_code != 200:
+        print(reply.text)
         raise Exception("get cn_bonds_uri status_code:", reply.status_code)
     record = reply.json()['records'][0]
     print('中国1年期国债利率:',  float3(float(record['oneRate'])))
@@ -43,12 +48,15 @@ def get_index():
     reply = requests.get(index_uri, headers=header)
     if reply.status_code != 200:
         raise Exception("get index_uri status_code:", reply.status_code)
+    # 'CSIH30533', 'SH000852'
+    index_codes = set(['HKHSI', 'SH000300', 'SH000905', 'SP500', 'NDX', 'HKHSTECH'])
     for i in reply.json()['data']['items']:
-        if i['index_code'] == "HKHSI" or i['index_code'] == "SH000300" or i['index_code'] == "SH000905" or i['index_code'] == "SH000852" or i['index_code'] == "SP500" or i['index_code'] == "NDX" or i['index_code'] == "CSIH30533":
+        # print(i)
+        if i['index_code'] in index_codes:
             pe_per = float3(1 - float(i['pe_over_history']))
             pb_per = float3(1 - float(i['pb_over_history']))
             roe_pb = float4(i['roe'] / i['pb'])
-            print(i['name'], ': PE:', float3(i['pe']), ', PB:', float3(i['pb']), ', ROE:', float4(i['roe']),
+            print(i['index_code'], i['name'], ': PE:', float3(i['pe']), ', PB:', float3(i['pb']), ', ROE:', float4(i['roe']),
                   ', PE百分位:', pe_per, ', PB百分位:', pb_per, ', 股息率:', i['yeild'], ', ROE/PB:', roe_pb)
 
 
@@ -58,5 +66,5 @@ print('\n')
 print('DATE:', date, '汇率(USD/CNY):', response.json()['rates']['CNY'])
 
 get_cn_bonds()
-get_us_bonds()
+# get_us_bonds()
 get_index()
