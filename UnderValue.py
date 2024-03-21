@@ -41,8 +41,8 @@ def ROIC(roic, pb, grow):
 uri = "https://datacenter.eastmoney.com/stock/selection/api/data/get/"
 d = {
     "type": "RPTA_SECURITY_STOCKSELECT",
-    "sty": "ECURITY_CODE,SECURITY_NAME_ABBR,NEW_PRICE,PBNEWMRQ,ROIC,NETPROFIT_GROWTHRATE_3Y,INCOME_GROWTHRATE_3Y,PREDICT_NETPROFIT_RATIO,PREDICT_INCOME_RATIO,SALE_NPR,PER_NETCASH_OPERATE,TOTAL_MARKET_CAP",
-    "filter": '(MARKET IN ("上交所主板","深交所主板","深交所创业板","上交所科创板","上交所风险警示板","深交所风险警示板","北京证券交易所"))(PBNEWMRQ>0)(PBNEWMRQ<=10)(TOTAL_MARKET_CAP>1000000000)(ROIC>5)(SALE_NPR>10)(NETPROFIT_GROWTHRATE_3Y>-5)(INCOME_GROWTHRATE_3Y>-5)(PREDICT_NETPROFIT_RATIO>0)(PREDICT_INCOME_RATIO>0)(PER_NETCASH_OPERATE>1)',
+    "sty": "ECURITY_CODE,SECURITY_NAME_ABBR,NEW_PRICE,PBNEWMRQ,ROIC,NETPROFIT_GROWTHRATE_3Y,INCOME_GROWTHRATE_3Y,PREDICT_NETPROFIT_RATIO,PREDICT_INCOME_RATIO,SALE_NPR,PER_NETCASH_OPERATE,TOTAL_MARKET_CAP,PE9",
+    "filter": '(MARKET IN ("上交所主板","深交所主板","深交所创业板","上交所科创板","上交所风险警示板","深交所风险警示板","北京证券交易所"))(PBNEWMRQ>0)(PBNEWMRQ<=10)(PE9<40)(TOTAL_MARKET_CAP>1000000000)(ROIC>5)(SALE_NPR>10)(NETPROFIT_GROWTHRATE_3Y>-5)(INCOME_GROWTHRATE_3Y>-5)(PREDICT_NETPROFIT_RATIO>0)(PREDICT_INCOME_RATIO>0)(PER_NETCASH_OPERATE>1)',
     "p": 1,
     "ps": 500,
     "sr": -1,
@@ -56,7 +56,7 @@ if r.status_code != 200:
 
 data = r.json()["result"]["data"]
 
-print(['NAME', 'NEW_PRICE', 'PB', 'ROIC', 'GROW', 'ROIC_RETURN', 'ROIC_PRICE', 'DCF_PRICE', 'SCORE'])
+print(['NAME', 'NEW_PRICE', 'PB', 'PE', 'ROIC', 'GROW', 'ROIC_RETURN', 'ROIC_PRICE', 'DCF_PRICE', 'SCORE', '市赚率'])
 for i in r.json()["result"]["data"]:
     # ROIC
     # 非常非常保守的增长率估算: MIN(过去3年平均增长率的一半,分析师预估未来的增长率的1/3)
@@ -75,5 +75,8 @@ for i in r.json()["result"]["data"]:
 
     CASH_PRICE = DCF(i['PER_NETCASH_OPERATE'] * 1.35, GROW_YEAR, GROWTHRATE, 10)
     SCORE = (CASH_PRICE / i['NEW_PRICE'] + ROIC_PRICE / i['NEW_PRICE']) / 2
-    if SCORE > 0.9 and ROIC_RETURN > 3.5:
-        print([i['SECURITY_NAME_ABBR'], i['NEW_PRICE'], i['PBNEWMRQ'], i['ROIC'], GROWTHRATE, ROIC_RETURN, ROIC_PRICE, CASH_PRICE, SCORE])
+    PR = i['PE9']/i['ROIC']
+    # if ROIC_RETURN > 3 and PR < 2:
+    # if ROIC_RETURN > 2 and i['ROIC'] > 10 and PR < 1 and i['TOTAL_MARKET_CAP'] > 10000000000:
+    if ROIC_RETURN > 2 and i['ROIC'] > 20 and i['TOTAL_MARKET_CAP'] > 20000000000:
+        print([i['SECURITY_NAME_ABBR'], i['NEW_PRICE'], i['PBNEWMRQ'], i['PE9'], i['ROIC'], GROWTHRATE, ROIC_RETURN, ROIC_PRICE, CASH_PRICE, SCORE, PR])
