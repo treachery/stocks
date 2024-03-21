@@ -63,7 +63,7 @@ def get_index(max_rate: float):
             _suggested_position = 0
             rate_per = (max_rate/100)
             if i['roe'] > rate_per and i['roe'] <= 0.3:
-                roe_x = 1 + ((i['roe'] - (3 * rate_per)) / (3*rate_per)) # 认为roe > 3倍无风险利率是分界，高于赚的是easy money，享受额外加成
+                roe_x = 1 + ((i['roe'] - (3*rate_per)) / (i['roe'] + 3*rate_per)) # 认为roe > 3倍无风险利率是分界，高于赚的是easy money，享受额外加成
                 # pe_h = (0.5 + float(i['pe_over_history'])) # pe百分位低于50%则加成更高
                 pg_x = i['pe']/(i['roe']*100) # 市赚率, 市赚率大于1高估，小于1低估
                 rate_x = rate_per + 1
