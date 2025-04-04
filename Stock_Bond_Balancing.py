@@ -90,7 +90,8 @@ def get_index(max_rate: float):
             #     "{:<9}".format(i['index_code']),
                 print("{:<9}".format(i['index_code']), ': PE:', "{:>6.3f}".format(round(i['pe'], 3)), ', PB:', round(i['pb'], 3), ', ROE:', "{:.2%}".format(round(i['roe'], 4)),
                       ', PE百分位:', "{:>6}".format(pe_per), ', PB百分位:', "{:>6}".format(pb_per), ', 股息率:', "{:.2%}".format(i['yeild']),
-                      ', PB-ROE:', "{:>6.2%}".format(roe_pb), ', 预期收益率(修正PB-ROE):', "{:.1%}".format(roe_pb_x), pad_cjk(i['name'], 8))
+                      ', PB-ROE:', "{:>6.2%}".format(roe_pb), ', 预期收益率(修正PB-ROE):', "{:.1%}".format(roe_pb_x),
+                      ', 建议每周投资额:', "{:>4.0f}".format((roe_pb_x*100 - max_rate)*100), pad_cjk(i['name'], 8))
 
 date = time.strftime('%Y-%m-%d', time.localtime(time.time()))
 response = requests.get('https://api.exchangerate-api.com/v4/latest/USD')
@@ -99,6 +100,6 @@ print('\n\nDATE:', date, '汇率(USD/CNY):', response.json()['rates']['CNY'])
 
 # get_cn_bonds()
 max_rate = get_us_bonds()
-print('\n说明: 以ROE=15为分界，高于赚的是easy money，享受额外加成\n')
+print('\n说明: 以ROE=15%为分界，高于赚的是easy money，享受额外加成, 修正公式为(ROE*ROE/15)\n')
 
 get_index(max_rate)
