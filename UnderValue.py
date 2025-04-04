@@ -47,7 +47,7 @@ uri = "https://datacenter.eastmoney.com/stock/selection/api/data/get/"
 d = {
     "type": "RPTA_SECURITY_STOCKSELECT",
     "sty": "ECURITY_CODE,SECURITY_NAME_ABBR,NEW_PRICE,PBNEWMRQ,ROIC,NETPROFIT_GROWTHRATE_3Y,INCOME_GROWTHRATE_3Y,PREDICT_NETPROFIT_RATIO,PREDICT_INCOME_RATIO,SALE_NPR,PER_NETCASH_OPERATE,TOTAL_MARKET_CAP,PE9,TOTAL_MARKET_CAP,ROIC",
-    "filter": '(MARKET IN ("上交所主板","深交所主板","深交所创业板","上交所科创板","上交所风险警示板","深交所风险警示板","北京证券交易所"))(PBNEWMRQ<=10)(PE9>0)(PE9<50)(TOTAL_MARKET_CAP>10000000000)',
+    "filter": '(PBNEWMRQ<=10)(PE9>0)(PE9<50)(TOTAL_MARKET_CAP>10000000000)',
     "p": 1,
     "ps": 5000,
     "sr": -1,
@@ -65,7 +65,7 @@ Million = 1000*1000
 Billion = 1000*Million
 print('datalen: ', len(r.json()["result"]["data"]))
 # print(['NAME', 'NEW_PRICE', 'PB', 'PE', 'ROIC', 'GROW', 'ROIC_RETURN', 'ROIC_PRICE', 'DCF_PRICE', 'SCORE', '市赚率'])
-print(['NAME', 'NEW_PRICE', 'PB', 'PE', 'GROW', 'DCF_PRICE', 'SCORE', 'ROIC'])
+print(['NAME', 'NEW_PRICE', 'PB', 'PE', 'GROW', 'DCF_PRICE', 'SCORE', 'ROIC', '收益率(ROIC/PB)'])
 for i in r.json()["result"]["data"]:
     try:
         # ROIC
@@ -93,12 +93,14 @@ for i in r.json()["result"]["data"]:
         # SCORE = (CASH_PRICE / i['NEW_PRICE'] + ROIC_PRICE / i['NEW_PRICE']) / 2
         SCORE = CASH_PRICE / i['NEW_PRICE']
         PR = i['PE9']/roic
-        if ROIC_RETURN > 5 and PR < 2:
+        roicx = roic / i['PBNEWMRQ'] * ((GROWTHRATE + 100) / 100)
+        if roicx > 10 and roic > 10:
         # if ROIC_RETURN > 2 and i['ROIC'] > 10 and PR < 1 and i['TOTAL_MARKET_CAP'] > 10000000000:
 
         # if i['PBNEWMRQ'] < 1:
             # print('i:', i)
-            print([i['SECURITY_NAME_ABBR'], i['NEW_PRICE'], i['PBNEWMRQ'], i['PE9'], GROWTHRATE, CASH_PRICE, SCORE, roic])
+            print([i['SECURITY_NAME_ABBR'], i['NEW_PRICE'], i['PBNEWMRQ'], i['PE9'],
+                   GROWTHRATE, CASH_PRICE, SCORE, roic, roicx])
     except:
         print("except:", i)
 

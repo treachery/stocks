@@ -1,6 +1,7 @@
 import time
 import xmltodict
 import requests
+from wcwidth import wcswidth
 # 对比中美国债/中美大盘指数的投资性价比
 
 # 国债 https://data.eastmoney.com/cjsj/zmgzsyl.html
@@ -34,6 +35,10 @@ def get_us_bonds():
     print('美国1年期国债利率:', properties['d:BC_1YEAR']['#text']+'%', '美国10年期国债利率:', properties['d:BC_10YEAR']['#text']+'%')
     return max(float(properties['d:BC_1YEAR']['#text']), float(properties['d:BC_10YEAR']['#text']))
     # return float(properties['d:BC_10YEAR']['#text'])
+
+def pad_cjk(text, target_display_width):
+    current_width = wcswidth(text)
+    return text + ' ' * (target_display_width - current_width) if current_width < target_display_width else text
 
 # 宽基指数 https://danjuanfunds.com/djapi/index_eva/dj
 def get_index(max_rate: float):
@@ -74,7 +79,7 @@ def get_index(max_rate: float):
                 #     sp_x = 0
                 # else:
                 #     sp_x = 0.5 + (eg_x-rate_per)*3 / (4 * rate_per)
-                roe_pb_x = round(((i['roe'] - rate_per) / (3*rate_per)) * i['roe'] / i['pb'], 4)
+                roe_pb_x = round(((i['roe']) / 0.15) * i['roe'] / i['pb'], 4)
 
                 # _suggested_position = (roe_pb_x - rate_per) / (roe_pb_x + rate_per)  #* pe_h
 
@@ -82,15 +87,18 @@ def get_index(max_rate: float):
             # if _suggested_position > 0:
                 # print(i)
             # if i['pe'] < 20 and i['pb'] < 1:
-                print(i['index_code'], i['name'], ': PE:', round(i['pe'], 3), ', PB:', round(i['pb'], 3), ', ROE:', "{:.2%}".format(round(i['roe'], 4)),
-                      ', PE百分位:', pe_per, ', PB百分位:', pb_per, ', 股息率:', "{:.2%}".format(i['yeild']),
-                      ', ROE/PB:', "{:.2%}".format(roe_pb), ', 预期收益率(修正ROE/PB):', "{:.1%}".format(roe_pb_x))
+            #     "{:<9}".format(i['index_code']),
+                print("{:<9}".format(i['index_code']), ': PE:', "{:>6.3f}".format(round(i['pe'], 3)), ', PB:', round(i['pb'], 3), ', ROE:', "{:.2%}".format(round(i['roe'], 4)),
+                      ', PE百分位:', "{:>6}".format(pe_per), ', PB百分位:', "{:>6}".format(pb_per), ', 股息率:', "{:.2%}".format(i['yeild']),
+                      ', PB-ROE:', "{:>6.2%}".format(roe_pb), ', 预期收益率(修正PB-ROE):', "{:.1%}".format(roe_pb_x), pad_cjk(i['name'], 8))
 
 date = time.strftime('%Y-%m-%d', time.localtime(time.time()))
 response = requests.get('https://api.exchangerate-api.com/v4/latest/USD')
-print('计算仓位时，认为roe > 3倍无风险利率是分界，高于赚的是easy money，享受额外加成\n')
-print('DATE:', date, '汇率(USD/CNY):', response.json()['rates']['CNY'])
+
+print('\n\nDATE:', date, '汇率(USD/CNY):', response.json()['rates']['CNY'])
 
 # get_cn_bonds()
 max_rate = get_us_bonds()
+print('\n说明: 以ROE=15为分界，高于赚的是easy money，享受额外加成\n')
+
 get_index(max_rate)
