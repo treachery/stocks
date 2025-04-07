@@ -88,9 +88,15 @@ def get_index(max_rate: float):
                 # print(i)
             # if i['pe'] < 20 and i['pb'] < 1:
             #     "{:<9}".format(i['index_code']),
-                print("{:<9}".format(i['index_code']), ': PE:', "{:>6.3f}".format(round(i['pe'], 3)), ', PB:', round(i['pb'], 3), ', ROE:', "{:.2%}".format(round(i['roe'], 4)),
-                      ', PE百分位:', "{:>6}".format(pe_per), ', PB百分位:', "{:>6}".format(pb_per), ', 股息率:', "{:.2%}".format(i['yeild']),
-                      ', PB-ROE:', "{:>6.2%}".format(roe_pb), ', 预期收益率(修正PB-ROE):', "{:.1%}".format(roe_pb_x),
+                print("{:<9}".format(i['index_code']),
+                      ': PE:', "{:>6.3f}".format(round(i['pe'], 3)),
+                      ', PB:', "{:>6.3f}".format(round(i['pb'], 3)),
+                      ', ROE:', "{:.2%}".format(round(i['roe'], 4)),
+                      ', PE百分位:', "{:>6}".format(pe_per),
+                      ', PB百分位:', "{:>6}".format(pb_per),
+                      ', 股息率:', "{:.2%}".format(i['yeild']),
+                      ', PB-ROE:', "{:>6.2%}".format(roe_pb),
+                      ', 预期收益率(修正PB-ROE):', "{:.1%}".format(roe_pb_x),
                       ', 建议每周投资额:', "{:>4.0f}".format((roe_pb_x*100 - max_rate)*100), pad_cjk(i['name'], 8))
 
 date = time.strftime('%Y-%m-%d', time.localtime(time.time()))
